@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manantial Producciones</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('background.png') no-repeat center center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: white;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+        }
+        h1 {
+            font-size: 1rem;
+            color: white;
+            text-shadow: -2px 2px 4px rgba(0, 0, 0, 1);
+        }
+        .social-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .social-container img {
+            max-width: 30px;
+        }
+        .video-container {
+            margin: 20px auto;
+            max-width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .video-box {
+            position: relative;
+            border: 6px solid transparent;
+            border-image: linear-gradient(45deg, red, orange, yellow, green, blue, indigo, violet) 1;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+        }
+        .video-box video {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .video-box a {
+            display: block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #00ffcc;
+        }
+        .no-videos {
+            margin-top: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: -2px 2px 4px rgba(0, 0, 0, 1);
+        }
+    </style>
+</head>
+<body>
+    <img src="manantial.png" alt="Manantial Producciones">
+    <div class="social-container">
+        <img src="instagram.png" alt="Instagram logo">
+        <a href="https://www.instagram.com/manantialproducciones/" target="_blank" style="text-decoration: none;">
+            <h1>@manantialproducciones</h1>
+        </a>
+    </div>
+    <div class="video-container">
+        <!-- Videos cargados dinámicamente -->
+    </div>
+    <script>
+        const container = document.querySelector('.video-container');
+    
+        const excludedFiles = ['background.png', 'manantial.png', 'instagram.png', 'server_qr.png'];
+
+        fetch('/videos')
+            .then(response => response.json())
+            .then(data => {
+                const { videos, images } = data;
+
+                if (videos.length === 0 && images.length === 0) {
+                    const noContentMessage = document.createElement('h1');
+                    noContentMessage.className = 'no-videos';
+                    noContentMessage.textContent = 'No hay contenido cargado';
+                    container.appendChild(noContentMessage);
+                } else {
+                    videos.forEach(video => {
+                        const box = document.createElement('div');
+                        box.className = 'video-box';
+
+                        box.innerHTML = `
+                            <video src="${video}" controls loop></video>
+                            <a href="${video}" download>Descargar Video</a>
+                        `;
+
+                        const videoElement = box.querySelector('video');
+                        videoElement.addEventListener('ended', () => {
+                            if (!videoElement.paused) {
+                                videoElement.play();
+                            }
+                        });
+
+                        container.appendChild(box);
+                    });
+
+                    images
+                        .filter(image => {
+                            // Obtén solo el nombre del archivo, sin la ruta
+                            const fileName = image.split('/').pop();
+                            return !excludedFiles.includes(fileName);
+                        })
+                        .forEach(image => {
+                            const box = document.createElement('div');
+                            box.className = 'video-box';
+
+                            box.innerHTML = `
+                                <img src="${image}" alt="Imagen cargada">
+                                <a href="${image}" download>Descargar Imagen</a>
+                            `;
+
+                            container.appendChild(box);
+                        });
+
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar los archivos:', error);
+                const errorMessage = document.createElement('h1');
+                errorMessage.className = 'no-videos';
+                errorMessage.textContent = 'Error al cargar el contenido';
+                container.appendChild(errorMessage);
+            });
+
+    </script>
+    
+</body>
+</html>
